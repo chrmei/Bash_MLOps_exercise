@@ -46,6 +46,7 @@ log_message() {
 
 log_message "================================"
 log_message "=== Starting data collection ==="
+log_message "================================"
 log_message "Timestamp: $CURRENT_TIMESTAMP"
 log_message "Output file: $OUTPUT_CSV"
 
@@ -60,7 +61,7 @@ log_message "  INFO   : Appending newline to $OUTPUT_CSV"
     echo "" >> "$OUTPUT_CSV"
 fi
 
-log_message ""
+log_message "----------------------------------------"
 log_message "  INFO   : Start Querying API for models"
 # query API for each model and append to OUTPUT_CSV
 for model in "${GRAPHIC_CARDS_MODELS[@]}"; do
@@ -86,7 +87,6 @@ for model in "${GRAPHIC_CARDS_MODELS[@]}"; do
     fi
 done
 
-log_message ""
 log_message "================================="
 log_message "Total models queried: ${#GRAPHIC_CARDS_MODELS[@]}"
 log_message "Output file: $OUTPUT_CSV"
