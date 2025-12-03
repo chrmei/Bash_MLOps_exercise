@@ -27,7 +27,7 @@
 #     - Any possible errors
 # ==============================================================================
 
-API_URL="http:/0.0.0.0:5000"
+API_URL="http:/0.0.0.0:5000/"
 LOG_FILE="logs/collect.logs"
 DATA_DIR="data/raw"
 SOURCE_CSV="$DATA_DIR/sales_data.csv" # given in repository through exam
@@ -36,7 +36,7 @@ GRAPHIC_CARDS_MODELS=("rtx3060" "rtx3070" "rtx3080" "rtx3090" "rx6700")
 
 CURRENT_TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 
-TIMESTAMP_FILENAME=$(date + "%Y%m%d_%H%M")
+TIMESTAMP_FILENAME=$(date +"%Y%m%d_%H%M")
 
 OUTPUT_CSV="$DATA_DIR/sales_${TIMESTAMP_FILENAME}.csv"
 
@@ -53,17 +53,17 @@ cp "$SOURCE_CSV" "$OUTPUT_CSV"
 log_message "Copied $SOURCE_CSV to $OUTPUT_CSV"
 
 # query API for each model and append to OUTPUT_CSV
-for model in"${MODELS[@]}"; do
-    API_URL="${API_URL}/${model}"
-    log_message "Querying API for model: $model with $API_URL"
+for model in "${MODELS[@]}"; do
+    FULL_API_URL="${API_URL}/${model}"
+    log_message "Querying API for model: $model with $FULL_API_URL"
     
     TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-    SALES=$(curl -s "$API_URL" 2>&1)
+    SALES=$(curl -s "$FULL_API_URL" 2>&1)
     CURL_EXIT_CODE=$?
 
     if [ $CURL_EXIT_CODE -eq 0 ]; then
         # valid number?
-        if [[ "SALES" =~ ^[0-9]+$ ]]; then
+        if [[ "$SALES" =~ ^[0-9]+$ ]]; then
             # append
             echo "$TIMESTAMP,$model,$SALES" >> "$OUTPUT_CSV"
             log_message "  SUCCESS: $model: $SALES sales
