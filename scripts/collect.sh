@@ -53,7 +53,7 @@ cp "$SOURCE_CSV" "$OUTPUT_CSV"
 log_message "Copied $SOURCE_CSV to $OUTPUT_CSV"
 
 # query API for each model and append to OUTPUT_CSV
-for model in "${MODELS[@]}"; do
+for model in "${GRAPHIC_CARDS_MODELS[@]}"; do
     FULL_API_URL="${API_URL}/${model}"
     log_message "Querying API for model: $model with $FULL_API_URL"
     
@@ -66,7 +66,7 @@ for model in "${MODELS[@]}"; do
         if [[ "$SALES" =~ ^[0-9]+$ ]]; then
             # append
             echo "$TIMESTAMP,$model,$SALES" >> "$OUTPUT_CSV"
-            log_message "  SUCCESS: $model: $SALES sales
+            log_message "  SUCCESS: $model: $SALES sales"
         else
             log_message "  ERROR  : Invalid response for $model: '$SALES' - not a number"
         fi
