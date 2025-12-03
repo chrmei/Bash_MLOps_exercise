@@ -15,14 +15,14 @@ in the 'data/raw/' directory.
 Any errors or anomalies are also logged to ensure traceability.
 -------------------------------------------------------------------------------
 """
+
 import os
 import pandas as pd
 from pathlib import Path
-from datetime import datetime
 from sklearn.preprocessing import LabelEncoder
 
 
-def find_latest_csv_file(raw_dir: str) -> str:
+def find_latest_csv_file(raw_dir: str) -> Path:
     """Find the latest CSV file matching the pattern sales_YYYYMMDD_HHMM.csv"""
     files = os.listdir(raw_dir)
     csv_files = [raw_dir / f for f in files if f.endswith(".csv")]
@@ -84,6 +84,7 @@ def convert_timestamps(df: pd.DataFrame) -> pd.DataFrame:
 def extract_temporal_features(df: pd.DataFrame) -> pd.DataFrame:
     """Extract hour, day_of_week, day_of_month, and month from timestamp"""
     print("Extracting temporal features...")
+    df["year"] = df["timestamp"].dt.year.astype(int)
     df["hour"] = df["timestamp"].dt.hour.astype(int)
     df["day_of_week"] = df["timestamp"].dt.dayofweek.astype(int)
     df["day_of_month"] = df["timestamp"].dt.day.astype(int)
@@ -109,19 +110,56 @@ def encode_model_column(df: pd.DataFrame) -> pd.DataFrame:
     le = LabelEncoder()
     df["model_encoded"] = le.fit_transform(df["model"]).astype(int)
 
-    mapping = {cls: int(code) for cls, code in zip(le.classes_, le.transform(le.classes_))}
+    mapping = {
+        cls: int(code) for cls, code in zip(le.classes_, le.transform(le.classes_))
+    }
 
     print(f"Model encoding: {mapping}")
     return df
 
 
+def drop_original_columns(df):
+    """Drop timestamp and model columns"""
+    print("Dropping original timestamp and model columns...")
+    df = df.drop(columns=["timestamp", "model"])
+    return df
+
+
+def reorder_columns(df):
+    """Reorder into a meaningful order, target last."""
+    print("Reordering columns...")
+    df = df[["model_encoded", "year", "month", "day_of_week", "hour", "sales"]]
+    return df
+
+
+def save_processed_data(
+    target_dir: str, df: pd.DataFrame, initial_rows: int, original_path: Path
+):
+    """Save processed dataframe to CSV file"""
+    processed_dir_path = Path(target_dir)
+
+    output_filename = original_path.name.replace("sales_", "sales_processed_")
+
+    output_path = processed_dir_path / output_filename
+
+    df.to_csv(output_path, index=False)
+
+    final_rows = len(df)
+
+    print(f"Final preprocessed data: {final_rows} rows, {len(df.columns)} columns")
+    print(f"Rows removed: {initial_rows - final_rows}")
+    print(f"Preprocessed data saved to {output_path}")
+
+
 if __name__ == "__main__":
+    raw_dir_path = "data/raw"
+    processed_dir_path = "data/processed"
 
     raw_dir = Path("data/raw")
 
     latest_file = find_latest_csv_file(raw_dir)
-
     df = load_data(latest_file)
+    initial_rows = len(df)
 
     df = convert_timestamps(df)
 
@@ -131,4 +169,8 @@ if __name__ == "__main__":
 
     df = encode_model_column(df)
 
-    print("\n", df.head())
+    df = drop_original_columns(df)
+
+    df = reorder_columns(df)
+
+    save_processed_data(processed_dir_path, df, initial_rows, latest_file)

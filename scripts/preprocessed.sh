@@ -7,7 +7,7 @@ LOG_FILE="logs/preprocessed.logs"
 PYTHON_SCRIPT="src/preprocessed.py"
 
 log_message() {
-    echo "[$date '+%Y-%m-%d %H:%M:%S')] $1" >> "$LOG_FILE"
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1" >> "$LOG_FILE"
 }
 
 log_message "================================"
