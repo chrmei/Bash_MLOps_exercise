@@ -26,3 +26,59 @@
 #     - The retrieved sales data
 #     - Any possible errors
 # ==============================================================================
+
+API_URL="http:/0.0.0.0:5000"
+LOG_FILE="logs/collect.logs"
+DATA_DIR="data/raw"
+SOURCE_CSV="$DATA_DIR/sales_data.csv" # given in repository through exam
+
+GRAPHIC_CARDS_MODELS=("rtx3060" "rtx3070" "rtx3080" "rtx3090" "rx6700")
+
+CURRENT_TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+TIMESTAMP_FILENAME=$(date + "%Y%m%d_%H%M")
+
+OUTPUT_CSV="$DATA_DIR/sales_${TIMESTAMP_FILENAME}.csv"
+
+log_message() {
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1" >> "$LOG_FILE"
+}
+
+log_message "=== Starting data collection ==="
+log_message "Timestamp: $CURRENT_TIMESTAMP"
+log_message "Output file: $OUTPUT_CSV"
+
+# as SOURCE_CSV is given in repository, I do not check if file exists
+cp "$SOURCE_CSV" "$OUTPUT_CSV"
+log_message "Copied $SOURCE_CSV to $OUTPUT_CSV"
+
+# query API for each model and append to OUTPUT_CSV
+for model in"${MODELS[@]}"; do
+    API_URL="${API_URL}/${model}"
+    log_message "Querying API for model: $model with $API_URL"
+    
+    TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+    SALES=$(curl -s "$API_URL" 2>&1)
+    CURL_EXIT_CODE=$?
+
+    if [ $CURL_EXIT_CODE -eq 0 ]; then
+        # valid number?
+        if [[ "SALES" =~ ^[0-9]+$ ]]; then
+            # append
+            echo "$TIMESTAMP,$model,$SALES" >> "$OUTPUT_CSV"
+            log_message "  SUCCESS: $model: $SALES sales
+        else
+            log_message "  ERROR  : Invalid response for $model: '$SALES' - not a number"
+        fi
+    else
+        log_message     "  ERROR  : Failed to query API for $model. Curl exit code: $CURL_EXIT_CODE"
+        log_message     "  ERROR  : Response: $SALES"
+    fi
+done
+
+log_message ""
+log_message "Total models queried: ${#GRAPHIC_CARDS_MODELS[@]}"
+log_message "Output file: $OUTPUT_CSV"
+log_message "Log file: $LOG_FILE"
+log_message "=== Data collection completed ==="
+log_message ""
