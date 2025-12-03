@@ -84,6 +84,7 @@ for model in "${GRAPHIC_CARDS_MODELS[@]}"; do
 done
 
 log_message ""
+log_message "================================="
 log_message "Total models queried: ${#GRAPHIC_CARDS_MODELS[@]}"
 log_message "Output file: $OUTPUT_CSV"
 log_message "Log file: $LOG_FILE"
