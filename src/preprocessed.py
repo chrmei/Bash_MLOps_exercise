@@ -27,7 +27,7 @@ def find_latest_csv_file(raw_dir: str) -> Path:
     files = os.listdir(raw_dir)
     csv_files = [raw_dir / f for f in files if f.endswith(".csv")]
     if not csv_files:
-        print("ERROR: No raw CSV files found")
+        print("  ERROR: No raw CSV files found")
         exit(1)
 
     ts_files = []
@@ -59,31 +59,31 @@ def find_latest_csv_file(raw_dir: str) -> Path:
 
 def load_data(file_path):
     """Load CSV data and return dataframe"""
-    print(f"Loading: {file_path}")
+    print(f"  Loading: {file_path}")
     df = pd.read_csv(file_path)
-    print(f"Data Loaded: {len(df)} rows, {len(df.columns)} columns")
+    print(f"  Data Loaded: {len(df)} rows, {len(df.columns)} columns")
     return df
 
 
 def convert_timestamps(df: pd.DataFrame) -> pd.DataFrame:
     """Convert timestamp column to datetime and remove invalid entries"""
-    print("Converting timestamp column...")
+    print("  Converting timestamp column...")
     df["timestamp"] = pd.to_datetime(df["timestamp"], errors="coerce")
     invalid_count = df["timestamp"].isna().sum()
 
     if invalid_count > 0:
-        print(f"Removing {invalid_count} rows with invalid timestamps")
+        print(f"    Removing {invalid_count} rows with invalid timestamps")
         df = df.dropna(subset=["timestamp"]).reset_index(drop=True)
     else:
-        print("No invalid timestamps found!")
-    print("Timestamps successfully converted.")
+        print("    No invalid timestamps found!")
+    print("  Timestamps successfully converted.")
 
     return df
 
 
 def extract_temporal_features(df: pd.DataFrame) -> pd.DataFrame:
     """Extract hour, day_of_week, day_of_month, and month from timestamp"""
-    print("Extracting temporal features...")
+    print("  Extracting temporal features...")
     df["year"] = df["timestamp"].dt.year.astype(int)
     df["hour"] = df["timestamp"].dt.hour.astype(int)
     df["day_of_week"] = df["timestamp"].dt.dayofweek.astype(int)
@@ -94,7 +94,7 @@ def extract_temporal_features(df: pd.DataFrame) -> pd.DataFrame:
 
 def clean_sales_data(df: pd.DataFrame) -> pd.DataFrame:
     """Remove rows with negative sales values"""
-    print("Cleaning sales data...")
+    print("  Cleaning sales data...")
     negative_count = (df["sales"] < 0).sum()
 
     if negative_count > 0:
@@ -106,7 +106,7 @@ def clean_sales_data(df: pd.DataFrame) -> pd.DataFrame:
 
 def encode_model_column(df: pd.DataFrame) -> pd.DataFrame:
     """Encode model column using LabelEncoder"""
-    print("Encoding model column...")
+    print("  Encoding model column...")
     le = LabelEncoder()
     df["model_encoded"] = le.fit_transform(df["model"]).astype(int)
 
@@ -114,20 +114,20 @@ def encode_model_column(df: pd.DataFrame) -> pd.DataFrame:
         cls: int(code) for cls, code in zip(le.classes_, le.transform(le.classes_))
     }
 
-    print(f"Model encoding: {mapping}")
+    print(f"    Model encoding: {mapping}")
     return df
 
 
 def drop_original_columns(df):
     """Drop timestamp and model columns"""
-    print("Dropping original timestamp and model columns...")
+    print("  Dropping original timestamp and model columns...")
     df = df.drop(columns=["timestamp", "model"])
     return df
 
 
 def reorder_columns(df):
     """Reorder into a meaningful order, target last."""
-    print("Reordering columns...")
+    print("  Reordering columns...")
     df = df[["model_encoded", "year", "month", "day_of_week", "hour", "sales"]]
     return df
 
@@ -146,9 +146,9 @@ def save_processed_data(
 
     final_rows = len(df)
 
-    print(f"Final preprocessed data: {final_rows} rows, {len(df.columns)} columns")
-    print(f"Rows removed: {initial_rows - final_rows}")
-    print(f"Preprocessed data saved to {output_path}")
+    print(f"  Final preprocessed data: {final_rows} rows, {len(df.columns)} columns")
+    print(f"  Rows removed: {initial_rows - final_rows}")
+    print(f"  Preprocessed data saved to {output_path}")
 
 
 if __name__ == "__main__":

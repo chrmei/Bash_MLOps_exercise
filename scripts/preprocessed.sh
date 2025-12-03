@@ -15,8 +15,10 @@ log_message "=== Starting data preprocessing ==="
 log_message "================================"
 log_message "Python script: $PYTHON_SCRIPT"
 
-# run and capture stdout and stderr
-if python3 "$PYTHON_SCRIPT" >> "$LOG_FILE" 2>&1; then
+# run and capture stdout and stderr - and also add timestamps to python outputs
+if python3 "$PYTHON_SCRIPT" 2>&1 | while IFS= read -r line; do
+    log_message "$line"
+done; then
     log_message "  SUCCESS: Data preprocessing completed!"
     log_message "=== Preprocessing completed ==="
     log_message "==============================="
