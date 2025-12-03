@@ -52,6 +52,13 @@ log_message "Output file: $OUTPUT_CSV"
 cp "$SOURCE_CSV" "$OUTPUT_CSV"
 log_message "Copied $SOURCE_CSV to $OUTPUT_CSV"
 
+# in a test, last line of OUTPUT_CSV contained an error when appending ( original sales_data.csv ended not witha a newline.)
+# so: check if last byte is newline, if yes: append newline to output csv
+if [ "$(tail -c 1 "$OUTPUT_CSV" 2>/dev/null | od -An -tx1)" != " 0a " ]; then
+log_message "  INFO   : Appending newline to $OUTPUT_CSV"
+    echo "" >> "$OUTPUT_CSV"
+fi
+
 # query API for each model and append to OUTPUT_CSV
 for model in "${GRAPHIC_CARDS_MODELS[@]}"; do
     FULL_API_URL="${API_URL}/${model}"
