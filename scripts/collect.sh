@@ -63,6 +63,7 @@ fi
 
 log_message "----------------------------------------"
 log_message "  INFO   : Start Querying API for models"
+log_message "----------------------------------------"
 # query API for each model and append to OUTPUT_CSV
 for model in "${GRAPHIC_CARDS_MODELS[@]}"; do
     FULL_API_URL="${API_URL}/${model}"
