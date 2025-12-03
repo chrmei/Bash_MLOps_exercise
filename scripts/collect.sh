@@ -44,6 +44,7 @@ log_message() {
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1" >> "$LOG_FILE"
 }
 
+log_message "================================"
 log_message "=== Starting data collection ==="
 log_message "Timestamp: $CURRENT_TIMESTAMP"
 log_message "Output file: $OUTPUT_CSV"
