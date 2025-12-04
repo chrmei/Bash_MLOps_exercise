@@ -1,2 +1,4 @@
 api*
 .venv
+**/__pycache__
+**/*.pkl

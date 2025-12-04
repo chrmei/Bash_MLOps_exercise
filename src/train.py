@@ -20,6 +20,7 @@ import pickle
 import pandas as pd
 from sklearn.model_selection import train_test_split
 import xgboost as xgb
+from sklearn.metrics import root_mean_squared_error, mean_absolute_error, r2_score
 
 
 def check_model_exists(model_path: str) -> bool:
@@ -42,6 +43,9 @@ def split_train_test(X: pd.DataFrame, y: pd.DataFrame, test_size=0.2, random_sta
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=test_size, random_state=random_state
     )
+    print(f"    Training set: {len(X_train)} samples")
+    print(f"    Test set: {len(X_test)} samples")
+
     return X_train, X_test, y_train, y_test
 
 
@@ -55,12 +59,20 @@ def train_model(X_train, y_train, random_state=42, n_estimators=100, max_depth=6
     return model
 
 
-def evaluate_model(model, X_test, y_test):
-    pass
+def evaluate_model(model, X_test, y_test) -> tuple:
+    y_pred = model.predict(X_test)
+
+    rmse = root_mean_squared_error(y_test, y_pred)
+    mae = mean_absolute_error(y_test, y_pred)
+    r2 = r2_score(y_test, y_pred)
+    return rmse, mae, r2
 
 
 def print_metrics(rmse, mae, r2):
-    pass
+    print("  Model Performance Metrics:")
+    print(f"    RMSE: {rmse:.4f}")
+    print(f"    MAE:  {mae:.4f}")
+    print(f"    R²:   {r2:.4f}")
 
 
 def get_model_filename(model_exists: bool) -> str:
@@ -69,7 +81,7 @@ def get_model_filename(model_exists: bool) -> str:
     else:
         timestamp = datetime.now().strftime("%Y%m%d_%H%M")
         return f"model/model_{timestamp}.pkl"
-    
+
 
 def save_model(model, filepath: str):
     with open(filepath, "wb") as f:
@@ -98,20 +110,23 @@ if __name__ == "__main__":
 
         # 4. Split
         print("  Split data into train & test...")
+        X_train, X_test, y_train, y_test = split_train_test(X, y)
 
         # 5. Train Model
         print("  Start training of the model...")
+        model = train_model(X_train, y_train)
 
         # 6. Evaluate model
         print("  Evaluating model...")
+        rmse, mae, r2 = evaluate_model(model, X_test, y_test)
 
         # 8. Metrics
+        print_metrics(rmse, mae, r2)
 
         # 9. Save model (logics)
         print("  Saving model...")
-
-        print("  SUCCESS: MOdel training completed!")
-
+        model_filename = get_model_filename(model_exists)
+        save_model(model, model_filename)
 
     except Exception as e:
         print(f"  ERROR: {str(e)}")
