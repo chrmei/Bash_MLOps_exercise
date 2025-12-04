@@ -110,7 +110,7 @@ def save_processed_data(
 
 if __name__ == "__main__":
     raw_dir = "data/raw"
-    procseed_dir = "data/processed"
+    processed_dir = "data/processed"
 
     try:
         latest_file = find_latest_csv_file(raw_dir)
@@ -129,7 +129,7 @@ if __name__ == "__main__":
 
         df = reorder_columns(df)
 
-        save_processed_data(procseed_dir, df, initial_rows, latest_file)
+        save_processed_data(processed_dir, df, initial_rows, latest_file)
 
     except Exception as e:
         print(f"  ERROR: {str(e)}")

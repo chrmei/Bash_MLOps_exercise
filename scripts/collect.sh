@@ -27,7 +27,7 @@
 #     - Any possible errors
 # ==============================================================================
 
-API_URL="http:/0.0.0.0:5000/"
+API_URL="http://0.0.0.0:5000/"
 LOG_FILE="logs/collect.logs"
 DATA_DIR="data/raw"
 SOURCE_CSV="$DATA_DIR/sales_data.csv" # given in repository through exam
