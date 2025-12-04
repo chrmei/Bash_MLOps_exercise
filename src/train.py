@@ -13,3 +13,12 @@ The models are saved in the 'model/' folder with the name 'model.pkl' for the st
 The model metrics are recorded in the script’s log files.
 -------------------------------------------------------------------------------
 """
+from helper import find_latest_csv_file, load_data
+
+
+if __name__ == '__main__':
+    processed_path = "data/processed"
+
+    latest_file = find_latest_csv_file(processed_path)
+    print(f"{latest_file=}")
+    df = load_data(latest_file)
