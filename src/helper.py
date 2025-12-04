@@ -1,6 +1,6 @@
-import os 
+import os
 from pathlib import Path
-import pandas as pd 
+import pandas as pd
 
 
 def find_latest_csv_file(dir_path: str) -> Path:

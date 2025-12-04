@@ -1,6 +1,6 @@
 """
 -------------------------------------------------------------------------------
-This script runs the training of an XGBoost model to predict graphics card sales 
+This script runs the training of an XGBoost model to predict graphics card sales
 from the preprocessed data.
 
 1. It starts by searching for the latest preprocessed CSV file in the 'data/processed/' directory.
@@ -13,12 +13,106 @@ The models are saved in the 'model/' folder with the name 'model.pkl' for the st
 The model metrics are recorded in the script’s log files.
 -------------------------------------------------------------------------------
 """
+import os 
 from helper import find_latest_csv_file, load_data
+from datetime import datetime
+import pickle
+import pandas as pd
+from sklearn.model_selection import train_test_split
+import xgboost as xgb
 
 
-if __name__ == '__main__':
+def check_model_exists(model_path: str) -> bool:
+    model_exists = os.path.exists(model_path)
+    if model_exists:
+        print("    Standard model available!")
+    else:
+        print("    Standard model not available!")
+    return model_exists
+
+
+def prepare_data(df: pd.DataFrame):
+    """ Data splitting into features and target. """
+    X = df.drop(columns=["sales"])
+    y = df["sales"]
+    return X, y
+
+
+def split_train_test(X: pd.DataFrame, y: pd.DataFrame, test_size=0.2, random_state=42) -> tuple:
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=test_size, random_state=random_state
+    )
+    return X_train, X_test, y_train, y_test
+
+
+def train_model(X_train, y_train, random_state=42, n_estimators=100, max_depth=6):
+    model = xgb.XGBRegressor(
+        random_state=random_state,
+        n_estimators=n_estimators,
+        max_depth=max_depth
+    )
+    model.fit(X_train, y_train)
+    return model
+
+
+def evaluate_model(model, X_test, y_test):
+    pass
+
+
+def print_metrics(rmse, mae, r2):
+    pass
+
+
+def get_model_filename(model_exists: bool) -> str:
+    if not model_exists:
+        return "model/model.pkl"
+    else:
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M")
+        return f"model/model_{timestamp}.pkl"
+    
+
+def save_model(model, filepath: str):
+    with open(filepath, "wb") as f:
+        pickle.dump(model, f)
+    print(f"    Model saved to {filepath}")
+
+
+if __name__ == "__main__":
     processed_path = "data/processed"
+    standard_model_path = "model/model.pkl"
 
-    latest_file = find_latest_csv_file(processed_path)
-    print(f"{latest_file=}")
-    df = load_data(latest_file)
+    try:
+        # 1. Get latest preprocessed CSV file in the 'data/processed/' directory.
+        print("  Find latest processed CSV file...")
+        latest_file = find_latest_csv_file(processed_path)
+        df = load_data(latest_file)
+        print(f"  Found and loaded latest file {latest_file=}")
+
+        # 2. Standard model (model.pkl) available? 
+        print("  Check if standard model exists...")
+        model_exists = check_model_exists(standard_model_path)
+
+        # 3. Prep data - Feature & Target
+        print("  Seperate data into feature and target...")
+        X, y = prepare_data(df)
+
+        # 4. Split
+        print("  Split data into train & test...")
+
+        # 5. Train Model
+        print("  Start training of the model...")
+
+        # 6. Evaluate model
+        print("  Evaluating model...")
+
+        # 8. Metrics
+
+        # 9. Save model (logics)
+        print("  Saving model...")
+
+        print("  SUCCESS: MOdel training completed!")
+
+
+    except Exception as e:
+        print(f"  ERROR: {str(e)}")
+        raise

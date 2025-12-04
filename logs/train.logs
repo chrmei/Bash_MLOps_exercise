@@ -1,0 +1,15 @@
+[2025-12-04 09:23:56] ================================
+[2025-12-04 09:23:56] === Starting model training ===
+[2025-12-04 09:23:56] ================================
+[2025-12-04 09:23:56] Python script: src/train.py
+[2025-12-04 09:23:59]   Find latest processed CSV file...
+[2025-12-04 09:23:59]   Loading: data/processed/sales_processed_20251204_0859.csv
+[2025-12-04 09:23:59]   Data Loaded: 500 rows, 6 columns
+[2025-12-04 09:23:59]   Found and loaded latest file latest_file=PosixPath('data/processed/sales_processed_20251204_0859.csv')
+[2025-12-04 09:23:59]   Check if standard model exists...
+[2025-12-04 09:23:59]     Standard model not available!
+[2025-12-04 09:23:59]   SUCCESS: MOdel training completed!
+[2025-12-04 09:24:00]   SUCCESS: Model training completed!
+[2025-12-04 09:24:00] === Training completed ===
+[2025-12-04 09:24:00] ===============================
+[2025-12-04 09:24:00] 

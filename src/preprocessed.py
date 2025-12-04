@@ -15,6 +15,7 @@ in the 'data/raw/' directory.
 Any errors or anomalies are also logged to ensure traceability.
 -------------------------------------------------------------------------------
 """
+
 import pandas as pd
 from pathlib import Path
 from sklearn.preprocessing import LabelEncoder
@@ -111,20 +112,25 @@ if __name__ == "__main__":
     raw_dir = "data/raw"
     procseed_dir = "data/processed"
 
-    latest_file = find_latest_csv_file(raw_dir)
-    df = load_data(latest_file)
-    initial_rows = len(df)
+    try:
+        latest_file = find_latest_csv_file(raw_dir)
+        df = load_data(latest_file)
+        initial_rows = len(df)
 
-    df = convert_timestamps(df)
+        df = convert_timestamps(df)
 
-    df = extract_temporal_features(df)
+        df = extract_temporal_features(df)
 
-    df = clean_sales_data(df)
+        df = clean_sales_data(df)
 
-    df = encode_model_column(df)
+        df = encode_model_column(df)
 
-    df = drop_original_columns(df)
+        df = drop_original_columns(df)
 
-    df = reorder_columns(df)
+        df = reorder_columns(df)
 
-    save_processed_data(procseed_dir, df, initial_rows, latest_file)
+        save_processed_data(procseed_dir, df, initial_rows, latest_file)
+
+    except Exception as e:
+        print(f"  ERROR: {str(e)}")
+        raise
