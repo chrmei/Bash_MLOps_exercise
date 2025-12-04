@@ -1,2 +1,2 @@
 # Collect Graphic Cards Sales, Process it and train a new model.
-*/1 * * * * cd /home/ubuntu/exam_MEISTER/exam_bash && source .venv/bin/activate && make bash >> /home/ubuntu/exam_MEISTER/exam_bash/logs/cron.log 2>&1
+*/1 * * * * cd /home/ubuntu/exam_MEISTER/exam_bash && PATH=/home/ubuntu/exam_MEISTER/exam_bash/.venv/bin:$PATH /usr/bin/make bash >> /home/ubuntu/exam_MEISTER/exam_bash/logs/cron.log 2>&1
