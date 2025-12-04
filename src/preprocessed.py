@@ -85,7 +85,7 @@ def drop_original_columns(df):
 def reorder_columns(df):
     """Reorder into a meaningful order, target last."""
     print("  Reordering columns...")
-    df = df[["model_encoded", "year", "month", "day_of_week", "hour", "sales"]]
+    df = df[["model_encoded", "year", "month", "day_of_week", "day_of_month", "hour", "sales"]]
     return df
 
 
