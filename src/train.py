@@ -13,7 +13,8 @@ The models are saved in the 'model/' folder with the name 'model.pkl' for the st
 The model metrics are recorded in the script’s log files.
 -------------------------------------------------------------------------------
 """
-import os 
+
+import os
 from helper import find_latest_csv_file, load_data
 from datetime import datetime
 import pickle
@@ -33,13 +34,15 @@ def check_model_exists(model_path: str) -> bool:
 
 
 def prepare_data(df: pd.DataFrame):
-    """ Data splitting into features and target. """
+    """Data splitting into features and target."""
     X = df.drop(columns=["sales"])
     y = df["sales"]
     return X, y
 
 
-def split_train_test(X: pd.DataFrame, y: pd.DataFrame, test_size=0.2, random_state=42) -> tuple:
+def split_train_test(
+    X: pd.DataFrame, y: pd.DataFrame, test_size=0.2, random_state=42
+) -> tuple:
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=test_size, random_state=random_state
     )
@@ -51,9 +54,7 @@ def split_train_test(X: pd.DataFrame, y: pd.DataFrame, test_size=0.2, random_sta
 
 def train_model(X_train, y_train, random_state=42, n_estimators=100, max_depth=6):
     model = xgb.XGBRegressor(
-        random_state=random_state,
-        n_estimators=n_estimators,
-        max_depth=max_depth
+        random_state=random_state, n_estimators=n_estimators, max_depth=max_depth
     )
     model.fit(X_train, y_train)
     return model
@@ -100,7 +101,7 @@ if __name__ == "__main__":
         df = load_data(latest_file)
         print(f"  Found and loaded latest file {latest_file=}")
 
-        # 2. Standard model (model.pkl) available? 
+        # 2. Standard model (model.pkl) available?
         print("  Check if standard model exists...")
         model_exists = check_model_exists(standard_model_path)
 
