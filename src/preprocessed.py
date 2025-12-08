@@ -22,6 +22,64 @@ from sklearn.preprocessing import LabelEncoder
 from helper import find_latest_csv_file, load_data
 
 
+def validate_required_columns(df: pd.DataFrame) -> None:
+    """Validate that required columns exist in the dataframe.
+    
+    Args:
+        df: Input dataframe to validate
+        
+    Raises:
+        ValueError: If any required columns are missing
+    """
+    required_columns = ['timestamp', 'model', 'sales']
+    missing = set(required_columns) - set(df.columns)
+    if missing:
+        raise ValueError(
+            f"Missing required columns: {missing}. "
+            f"Available columns: {list(df.columns)}. "
+            f"Please ensure the input CSV contains columns: {required_columns}"
+        )
+
+
+def check_data_quality(df: pd.DataFrame) -> None:
+    """Perform data quality checks and warn on potential issues.
+    
+    Args:
+        df: Input dataframe to check
+    """
+    MIN_ROWS_THRESHOLD = 10  # Minimum expected rows for meaningful analysis
+    
+    # Check input volume
+    if len(df) < MIN_ROWS_THRESHOLD:
+        print(
+            f"  WARNING: Low input volume detected ({len(df)} rows). "
+            f"Expected at least {MIN_ROWS_THRESHOLD} rows for reliable preprocessing."
+        )
+    
+    # Check for extreme sales values if sales column exists
+    if 'sales' in df.columns:
+        sales_mean = df['sales'].mean()
+        sales_std = df['sales'].std()
+        sales_max = df['sales'].max()
+        
+        # Warn if there are extreme outliers (beyond 5 standard deviations)
+        if sales_std > 0:
+            extreme_threshold = sales_mean + (5 * sales_std)
+            extreme_count = (df['sales'] > extreme_threshold).sum()
+            if extreme_count > 0:
+                print(
+                    f"  WARNING: {extreme_count} extreme sales values detected "
+                    f"(> {extreme_threshold:.2f}). This may indicate data quality issues."
+                )
+        
+        # Warn if sales values are unusually high
+        if sales_max > 1000000:  # Arbitrary threshold for "unusually high"
+            print(
+                f"  WARNING: Maximum sales value is very high ({sales_max:.2f}). "
+                f"Please verify data correctness."
+            )
+
+
 def convert_timestamps(df: pd.DataFrame) -> pd.DataFrame:
     """Convert timestamp column to datetime and remove invalid entries"""
     print("  Converting timestamp column...")
@@ -75,14 +133,14 @@ def encode_model_column(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def drop_original_columns(df):
+def drop_original_columns(df: pd.DataFrame) -> pd.DataFrame:
     """Drop timestamp and model columns"""
     print("  Dropping original timestamp and model columns...")
     df = df.drop(columns=["timestamp", "model"])
     return df
 
 
-def reorder_columns(df):
+def reorder_columns(df: pd.DataFrame) -> pd.DataFrame:
     """Reorder into a meaningful order, target last."""
     print("  Reordering columns...")
     df = df[["model_encoded", "year", "month", "day_of_week", "day_of_month", "hour", "sales"]]
@@ -117,6 +175,15 @@ if __name__ == "__main__":
         df = load_data(latest_file)
         initial_rows = len(df)
 
+        # Validate required columns exist before processing
+        print("  Validating input data columns...")
+        validate_required_columns(df)
+        print("  Input validation passed: all required columns present")
+
+        # Perform data quality checks
+        print("  Performing data quality checks...")
+        check_data_quality(df)
+
         df = convert_timestamps(df)
 
         df = extract_temporal_features(df)
@@ -131,6 +198,17 @@ if __name__ == "__main__":
 
         save_processed_data(processed_dir, df, initial_rows, latest_file)
 
+    except FileNotFoundError as e:
+        print(f"  ERROR: File not found - {str(e)}")
+        raise
+    except ValueError as e:
+        print(f"  ERROR: Validation error in preprocessing - {str(e)}")
+        raise
     except Exception as e:
-        print(f"  ERROR: {str(e)}")
+        print(
+            f"  ERROR: Unexpected error during preprocessing. "
+            f"Operation: preprocessing sales data from {raw_dir}. "
+            f"Error type: {type(e).__name__}. "
+            f"Details: {str(e)}"
+        )
         raise

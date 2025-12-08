@@ -1,3 +1,4 @@
+.vscode
 api*
 .venv
 **/__pycache__
