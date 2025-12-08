@@ -20,15 +20,14 @@ from helper import find_latest_csv_file, load_data
 from datetime import datetime
 import pickle
 import pandas as pd
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, GridSearchCV
 import xgboost as xgb
 from sklearn.metrics import root_mean_squared_error, mean_absolute_error, r2_score
 
 # Configuration constants
 TEST_SIZE = 0.2  # Proportion of data for testing (~80/20 train/test split)
 RANDOM_STATE = 42  # Random seed for reproducibility
-N_ESTIMATORS = 100  # Number of boosting rounds for XGBoost
-MAX_DEPTH = 6  # Maximum tree depth to manage overfitting
+CV_FOLDS = 3  # Number of folds for cross-validation in grid search
 
 
 def check_model_exists(model_path: str) -> bool:
@@ -84,34 +83,52 @@ def train_model(
     X_train: pd.DataFrame,
     y_train: pd.Series,
     random_state: int = RANDOM_STATE,
-    n_estimators: int = N_ESTIMATORS,
-    max_depth: int = MAX_DEPTH,
+    cv_folds: int = CV_FOLDS,
 ) -> xgb.XGBRegressor:
-    """Train XGBoost model for sales prediction.
+    """Train XGBoost model for sales prediction using grid search.
     
-    XGBoost configuration — tuned for sales prediction:
-    - n_estimators: Number of boosting rounds (default: 100)
-      Higher values can improve performance but increase training time
-    - max_depth: Maximum tree depth to manage overfitting (default: 6)
-      Prevents the model from becoming too complex and overfitting to training data
+    Uses GridSearchCV to find optimal hyperparameters:
+    - n_estimators: Number of boosting rounds (tested: 50, 100, 150, 200, 250, 300)
+    - max_depth: Maximum tree depth (tested: 4, 6, 8)
+    - learning_rate: Step size shrinkage (tested: 0.01, 0.1, 0.3)
     - random_state: Seed for reproducibility (default: 42)
-      Ensures consistent results across runs
     
     Args:
         X_train: Training feature dataframe
         y_train: Training target series
         random_state: Random seed for reproducibility
-        n_estimators: Number of boosting rounds
-        max_depth: Maximum tree depth
+        cv_folds: Number of cross-validation folds
         
     Returns:
-        Trained XGBoost regressor model
+        Best trained XGBoost regressor model from grid search
     """
-    model = xgb.XGBRegressor(
-        random_state=random_state, n_estimators=n_estimators, max_depth=max_depth
+    # Define parameter grid for grid search
+    param_grid = {
+        'n_estimators': [50, 100, 150, 200, 250, 300],
+        'max_depth': [4, 6, 8],
+        'learning_rate': [0.01, 0.1, 0.3]
+    }
+    
+    # Base model
+    base_model = xgb.XGBRegressor(random_state=random_state)
+    
+    # Grid search with cross-validation
+    grid_search = GridSearchCV(
+        estimator=base_model,
+        param_grid=param_grid,
+        cv=cv_folds,
+        scoring='neg_mean_squared_error',
+        n_jobs=-1,
+        verbose=1
     )
-    model.fit(X_train, y_train)
-    return model
+    
+    print(f"    Running grid search with {cv_folds}-fold CV...")
+    grid_search.fit(X_train, y_train)
+    
+    print(f"    Best parameters: {grid_search.best_params_}")
+    print(f"    Best CV score (neg MSE): {grid_search.best_score_:.4f}")
+    
+    return grid_search.best_estimator_
 
 
 def check_model_metrics_quality(rmse: float, mae: float, r2: float) -> None:
